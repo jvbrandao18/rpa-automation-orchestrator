@@ -1,0 +1,11 @@
+.deps/
+.venv/
+.pytest_cache/
+pytest-cache-files-*/
+__pycache__/
+*.pyc
+data/*.db
+data/*.db-journal
+data/probe-write.txt
+tmp/
+.tmp/
