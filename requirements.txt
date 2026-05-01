@@ -1,0 +1,7 @@
+celery[redis]==5.4.0
+fastapi==0.115.6
+httpx==0.28.1
+pytest==8.3.4
+redis==5.2.1
+sqlalchemy==2.0.36
+uvicorn[standard]==0.34.0
