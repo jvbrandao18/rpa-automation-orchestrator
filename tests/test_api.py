@@ -5,6 +5,14 @@ def test_health_endpoint(client):
     assert response.json() == {"status": "ok"}
 
 
+def test_dashboard_exposes_monitoring_page(client):
+    response = client.get("/dashboard")
+
+    assert response.status_code == 200
+    assert "RPA Automation Orchestrator" in response.text
+    assert "loadJobs()" in response.text
+
+
 def test_create_echo_job_runs_asynchronously_in_eager_mode(client):
     response = client.post(
         "/jobs",
