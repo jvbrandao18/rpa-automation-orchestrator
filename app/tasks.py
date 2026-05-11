@@ -41,7 +41,7 @@ def _schedule_retry(db: Session, job: Job, error: str) -> bool:
     try:
         enqueue_job(job.id, countdown=1)
     except Exception as exc:
-        mark_terminal(job, JobStatus.FAILED, error=f"retry queue unavailable: {exc}")
+        mark_terminal(job, JobStatus.FAILED, error=f"retry queue unavailable after attempt {job.attempt}: {exc}")
         db.commit()
         log_event(logger, logging.ERROR, "job_retry_enqueue_failed", job_id=job.id, error=str(exc))
         return False
@@ -69,11 +69,12 @@ def run_job(self, job_id: str) -> dict[str, Any] | None:
         try:
             result = run_automation(job.task_type, payload, job.timeout_seconds)
         except AutomationTimeoutError as exc:
+            error = f"timeout: {exc}"
             if has_retry_budget(job):
-                if _schedule_retry(db, job, str(exc)):
+                if _schedule_retry(db, job, error):
                     return {"status": JobStatus.RETRYING.value, "attempt": attempt}
                 return {"status": JobStatus.FAILED.value, "attempt": attempt}
-            mark_terminal(job, JobStatus.FAILED, error=f"timeout: {exc}")
+            mark_terminal(job, JobStatus.FAILED, error=f"attempt {attempt} failed: {error}")
             db.commit()
             log_event(logger, logging.ERROR, "job_timeout", job_id=job.id, attempt=attempt, error=str(exc))
             return {"status": JobStatus.FAILED.value, "attempt": attempt}
@@ -82,12 +83,12 @@ def run_job(self, job_id: str) -> dict[str, Any] | None:
                 if _schedule_retry(db, job, str(exc)):
                     return {"status": JobStatus.RETRYING.value, "attempt": attempt}
                 return {"status": JobStatus.FAILED.value, "attempt": attempt}
-            mark_terminal(job, JobStatus.FAILED, error=str(exc))
+            mark_terminal(job, JobStatus.FAILED, error=f"attempt {attempt} failed: {exc}")
             db.commit()
             log_event(logger, logging.ERROR, "job_failed", job_id=job.id, attempt=attempt, error=str(exc))
             return {"status": JobStatus.FAILED.value, "attempt": attempt}
 
-        mark_terminal(job, JobStatus.SUCCESS, result=result)
+        mark_terminal(job, JobStatus.SUCCEEDED, result=result)
         db.commit()
         log_event(logger, logging.INFO, "job_succeeded", job_id=job.id, attempt=attempt)
-        return {"status": JobStatus.SUCCESS.value, "attempt": attempt, "result": result}
+        return {"status": JobStatus.SUCCEEDED.value, "attempt": attempt, "result": result}
