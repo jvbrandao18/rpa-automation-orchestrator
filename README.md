@@ -117,7 +117,7 @@ failed  -> retrying -> running -> success or failed
 | `sleep` | Sleeps for `payload.duration` seconds and fails if it exceeds `timeout_seconds` | Simulate waiting for a portal export, report download, or external batch job |
 | `fail` | Raises a simulated automation error for retry testing | Simulate a missing button, validation error, login issue, or unavailable page |
 
-## Practical examples
+## API examples
 
 Create a successful job:
 
@@ -224,12 +224,14 @@ Linux/macOS:
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+export REDIS_URL=redis://localhost:6379/0
 uvicorn app.main:app --reload
 ```
 
 In another terminal:
 
 ```bash
+export REDIS_URL=redis://localhost:6379/0
 celery -A app.celery_app.celery_app worker --loglevel=info --concurrency=2
 ```
 
@@ -239,12 +241,14 @@ Windows PowerShell:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+$env:REDIS_URL = "redis://localhost:6379/0"
 uvicorn app.main:app --reload
 ```
 
 In another PowerShell terminal:
 
 ```powershell
+$env:REDIS_URL = "redis://localhost:6379/0"
 celery -A app.celery_app.celery_app worker --loglevel=info --concurrency=2
 ```
 
