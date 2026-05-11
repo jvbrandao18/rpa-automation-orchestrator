@@ -9,7 +9,7 @@ from app.schemas import JobRead
 
 
 TERMINAL_STATUSES = {
-    JobStatus.SUCCESS.value,
+    JobStatus.SUCCEEDED.value,
     JobStatus.FAILED.value,
 }
 
@@ -75,8 +75,9 @@ def claim_job_for_execution(db: Session, job_id: str, task_id: str | None) -> Jo
 
 
 def mark_retrying(job: Job, error: str) -> None:
+    remaining_attempts = max((job.max_retries + 1) - job.attempt, 0)
     job.status = JobStatus.RETRYING.value
-    job.error = error
+    job.error = f"attempt {job.attempt} failed: {error}; {remaining_attempts} retry attempt(s) remaining"
     job.updated_at = utc_now()
 
 
