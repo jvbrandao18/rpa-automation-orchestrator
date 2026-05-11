@@ -11,7 +11,7 @@ from app.database import Base
 class JobStatus(StrEnum):
     PENDING = "pending"
     RUNNING = "running"
-    SUCCESS = "success"
+    SUCCEEDED = "succeeded"
     FAILED = "failed"
     RETRYING = "retrying"
 
